@@ -1,5 +1,6 @@
 import { Link, Route, Switch } from 'wouter'
 import Wiki from './pages/Wiki'
+import Test from './pages/Test'
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Switch>
         <Route path="/" component={Wiki} />
         <Route path="/about">About Us</Route>
+        <Route path="/test" component={Test} />
         <Route path="/users/:name">
           {(params) => <>Hello, {params.name}!</>}
         </Route>
