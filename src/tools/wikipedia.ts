@@ -65,7 +65,7 @@ export async function searchWikipedia(query: string): Promise<string[]> {
   const ranked = await rerank(query, corpus);
 
   const summaries = await Promise.all(
-    ranked.map(async (r) => {
+    ranked.filter(rank => rank.score >= 0.80).map(async (r) => {
       const page: GetPageResponse = await ky
         .get(
           `https://en.wikipedia.org/w/api.php?action=query&format=json&pageids=${results[r.corpus_id].pageid}&prop=extracts&exlimit=max&explaintext&exintro&origin=*`

@@ -12,9 +12,12 @@ export default function useMultiTurn() {
 
     if (state.status === Status.REASON) {
       runningRef.current = true;
-      chat(state.messages).then((resp) => {
+      const windowMessages = slidingWindow(state.messages);
+      console.log(windowMessages)
+      chat(windowMessages).then((resp) => {
         runningRef.current = false;
         const content = resp.choices[0].message.content ?? ''
+        console.log(resp.usage)
         const match = content.match(/<think>([\s\S]*?)<\/think>\s*([\s\S]*)/);
         // const thinkBlock = match?.[1]?.trim() ?? '';
         const response = match?.[2]?.trim() ?? '';
@@ -53,6 +56,31 @@ export default function useMultiTurn() {
   function start(userQuery: string) {
     dispatch({ type: ActionType.START, message: { role: "user", content: userQuery } })
   }
+
+  function slidingWindow(messages: Message[]) {
+    const system = messages[0];
+    const reminder: Message = {
+      role: "user",
+      content: '<REMINDER> Respond with JSON only: {"action": "search", "tool":{"toolName":"wikipedia_search","args":"query"}} or {"action": "respond", "content": "your answer"} </REMINDER>'
+    };
+    const rest = messages.slice(1);
+    let tokens = Math.ceil((system.content.length + reminder.content.length) / 4);
+    const keep: Message[] = [];
+
+    for (let i = rest.length - 1; i >= 0; i--) {
+      const msgTokens = Math.ceil(rest[i].content.length / 4);
+      if (tokens + msgTokens > 2000) break;
+      keep.unshift(rest[i]);
+      tokens += msgTokens;
+    }
+
+    if (keep.length === 0 && rest.length > 0) {
+      keep.push(rest[rest.length - 1]);
+    }
+
+    return [system, ...keep, reminder];
+  }
+
 
   return { start, state }
 }
@@ -96,7 +124,7 @@ function agentReducer(state: ReducerState, action: ReducerAction) {
         messages: [...state.messages,
         {
           role: "user" as const,
-          content: `<TOOL_USED> ${JSON.stringify(action.tool)} </TOOL_USED>${action.content}`,
+          content: `<TOOL_USED> ${JSON.stringify(action.tool)} </TOOL_USED>\n<RESULTS>${action.content || 'NO RESULTS FOUND. Do not make up an answer. Respond that you could not find enough information.'}</RESULTS>`,
         }
         ]
       }
@@ -152,7 +180,9 @@ Rules:
 - Always respond with valid JSON only, no other text
 - When searching, optimize the query for Wikipedia (use proper nouns, titles, specific terms)
 - Only search when the conversation context doesn't already contain the answer
-- After receiving search results, synthesize a clear answer using the provided context
+- After receiving search results, synthesize a clear answer using ONLY the provided context
+- If the search results are empty or do not contain enough information to answer the question, respond with {"action": "respond", "content": "I couldn't find enough information to answer that question. Try rephrasing or asking something else."}
+- NEVER make up or guess information that is not present in the search results
 - IMPORTANT: In the "content" value, use single quotes ('') instead of double quotes ("") to avoid breaking the JSON format. For example: {"action": "respond", "content": "He said 'hello' to her"}`;
 
 const initialState: ReducerState = {

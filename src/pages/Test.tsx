@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useMultiTurn from "@/hooks/useMultiTurn";
+import ky from "ky";
 import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 
@@ -11,9 +12,8 @@ export default function Test() {
   const { start, state } = useMultiTurn();
 
   async function callThing() {
-    start(userMessage);
-    setUserMessage('')
-    setResponse('');
+    const data = await ky.get('https://www.reddit.com/r/frontend/hot.json').json()
+    console.log(data);
   }
 
   useEffect(() => {
