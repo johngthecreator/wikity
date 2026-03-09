@@ -7,16 +7,16 @@ import Markdown from 'react-markdown';
 
 
 export interface Message {
-  role: "system" | "user"
+  role: "system" | "user" | "assistant"
   content: string
   thought?: string
 }
 
 export default function MessageBox({ role, content, thought }: Message) {
   return (
-    <Item variant="outline" className={`w-auto max-w-3/4 mb-4 ${role === 'system' ? "self-start" : "self-end"}`}>
+    <Item variant="outline" className={`w-auto max-w-3/4 mb-4 ${role === 'assistant' ? "self-start" : "self-end"}`}>
       <ItemContent>
-        {(thought && role === 'system') &&
+        {(thought && role === 'assistant') &&
           <Collapsible>
             <CollapsibleTrigger className="group">
               <Button

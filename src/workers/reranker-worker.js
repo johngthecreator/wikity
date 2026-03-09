@@ -2,7 +2,7 @@ import { AutoTokenizer, AutoModelForSequenceClassification, env } from "@hugging
 
 env.allowRemoteModels = true;
 env.allowLocalModels = false;
-env.remoteHost = '';
+env.remoteHost = 'https://pub-c715da35c2f84e228a518634bec87d72.r2.dev/';
 env.remotePathTemplate = 'mixedbread-ai/mxbai-rerank-xsmall-v1/';
 
 // Use the Singleton pattern to enable lazy construction of the pipeline.
