@@ -9,7 +9,7 @@ export default function Test() {
   const [userMessage, setUserMessage] = useState<string>("");
   const [response, setResponse] = useState<string | null>(null);
 
-  const { start, state } = useMultiTurn();
+  const { state } = useMultiTurn();
 
   async function callThing() {
     const data = await ky.get('https://www.reddit.com/r/frontend/hot.json').json()
